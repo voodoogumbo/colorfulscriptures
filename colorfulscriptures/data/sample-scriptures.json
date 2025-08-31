@@ -1,0 +1,57 @@
+[
+  {
+    "volume_title": "Book of Mormon",
+    "book_title": "1 Nephi",
+    "book_short_title": "1 Ne.",
+    "chapter_number": 3,
+    "verse_number": 7,
+    "verse_title": "1 Nephi 3:7",
+    "verse_short_title": "1 Ne. 3:7",
+    "scripture_text": "And it came to pass that I, Nephi, said unto my father: I will go and do the things which the Lord hath commanded, for I know that the Lord giveth no commandments unto the children of men, save he shall prepare a way for them that they may accomplish the thing which he commandeth them.",
+    "reference": "1 Nephi 3:7"
+  },
+  {
+    "volume_title": "Book of Mormon",
+    "book_title": "2 Nephi",
+    "book_short_title": "2 Ne.",
+    "chapter_number": 2,
+    "verse_number": 25,
+    "verse_title": "2 Nephi 2:25",
+    "verse_short_title": "2 Ne. 2:25",
+    "scripture_text": "Adam fell that men might be; and men are, that they might have joy.",
+    "reference": "2 Nephi 2:25"
+  },
+  {
+    "volume_title": "Doctrine and Covenants",
+    "book_title": "Doctrine and Covenants",
+    "book_short_title": "D&C",
+    "chapter_number": 76,
+    "verse_number": 22,
+    "verse_title": "Doctrine and Covenants 76:22",
+    "verse_short_title": "D&C 76:22",
+    "scripture_text": "And now, after the many testimonies which have been given of him, this is the testimony, last of all, which we give of him: That he lives!",
+    "reference": "Doctrine and Covenants 76:22"
+  },
+  {
+    "volume_title": "New Testament",
+    "book_title": "John",
+    "book_short_title": "John",
+    "chapter_number": 3,
+    "verse_number": 16,
+    "verse_title": "John 3:16",
+    "verse_short_title": "John 3:16",
+    "scripture_text": "For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.",
+    "reference": "John 3:16"
+  },
+  {
+    "volume_title": "Old Testament",
+    "book_title": "Isaiah",
+    "book_short_title": "Isa.",
+    "chapter_number": 55,
+    "verse_number": 8,
+    "verse_title": "Isaiah 55:8",
+    "verse_short_title": "Isa. 55:8",
+    "scripture_text": "For my thoughts are not your thoughts, neither are your ways my ways, saith the Lord.",
+    "reference": "Isaiah 55:8"
+  }
+]

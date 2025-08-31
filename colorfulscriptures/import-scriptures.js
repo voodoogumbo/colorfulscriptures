@@ -1,8 +1,12 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs/promises';
+import path from 'path';
 
-// Replace with your Supabase URL and API key
+// Get scripture data file path from command line argument or use default
+const scriptureDataPath = process.argv[2] || './data/lds-scriptures.json';
+
+// Supabase configuration from environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // Use the SERVICE_ROLE_KEY for server-side operations
 
@@ -14,12 +18,17 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function importScriptures() {
+    console.log(`Looking for scripture data at: ${scriptureDataPath}`);
+    
     let jsonData = null;
     try {
-        jsonData = await fs.readFile('/Users/williamg/Downloads/lds-scriptures.json', 'utf-8');
+        jsonData = await fs.readFile(scriptureDataPath, 'utf-8');
         console.log('Successfully read JSON file. First 50 characters:', jsonData.substring(0, 50));
     } catch (readError) {
-        console.error('Error reading JSON file:', readError);
+        console.error(`Error reading JSON file at ${scriptureDataPath}:`, readError.message);
+        console.error('Please ensure the scripture data file exists at the specified path.');
+        console.error('Usage: node import-scriptures.js [path-to-scripture-json]');
+        console.error('Default path: ./data/lds-scriptures.json');
         return; // Stop execution if file reading fails
     }
 
