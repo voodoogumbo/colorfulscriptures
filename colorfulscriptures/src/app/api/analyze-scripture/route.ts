@@ -121,9 +121,7 @@ export async function POST(req: NextRequest) {
     // 5. Initialize Google AI Client
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-        // Using the specific preview model requested by user
-        model: "gemini-2.5-flash-preview-04-17", // Corrected model name format (check if valid in SDK)
-        // NOTE: Ensure your SDK version supports this preview model. Otherwise use a stable one like "gemini-1.5-flash-latest".
+        model: "gemini-2.5-flash",
         // safetySettings: [ ... ],
     });
 
