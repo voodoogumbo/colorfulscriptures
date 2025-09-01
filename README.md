@@ -2,7 +2,7 @@
 
 An AI-powered scripture study tool designed specifically for **LDS (Latter-Day Saints) scriptures** that provides intelligent color-coding suggestions based on theological themes and concepts.
 
-> 📸 **Screenshot coming soon!** See `colorfulscriptures/docs/SCREENSHOT_GUIDE.md` for instructions on adding a demo image.
+![Scripture Analysis Example](colorfulscriptures/docs/screenshot.png)
 
 ## Overview
 
