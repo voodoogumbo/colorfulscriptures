@@ -57,7 +57,7 @@ Colorful Scriptures helps LDS members enhance their scripture study by analyzing
 
 ### 1. Clone and Install
 ```bash
-git clone https://github.com/yourusername/colorfulscriptures.git
+git clone https://github.com/voodoogumbo/colorfulscriptures.git
 cd colorfulscriptures
 npm install
 ```
@@ -196,7 +196,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## Support
 
-For questions or issues, please [open an issue](https://github.com/yourusername/colorfulscriptures/issues) on GitHub.
+For questions or issues, please [open an issue](https://github.com/voodoogumbo/colorfulscriptures/issues) on GitHub.
 
 ---
 
