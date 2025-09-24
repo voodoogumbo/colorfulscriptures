@@ -54,6 +54,11 @@ interface PageResultState {
   scriptureText: string | null;
   analysis: AnalysisResultDisplay[];
   primaryThemeReasoning: string | null;
+  analyzedReference: {
+    book: string;
+    chapter: number;
+    verse: number;
+  };
 }
 type ScriptureMetadata = {
   [volumeTitle: string]: string[];
@@ -333,6 +338,11 @@ export default function ScriptureColoringPage() {
         scriptureText: data.scriptureText ?? 'Scripture text not returned.',
         analysis: analysisWithColorValue,
         primaryThemeReasoning: data.primaryThemeReasoning ?? null,
+        analyzedReference: {
+          book: selectedBook,
+          chapter: chapterNum,
+          verse: verseNum,
+        },
       });
     } catch (err: unknown) {
       console.error('Error during fetch or processing:', err);
@@ -751,8 +761,9 @@ export default function ScriptureColoringPage() {
                   {result.scriptureText && (
                     <div className='p-4 bg-gray-50 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600'>
                       <h3 className='text-lg font-medium text-gray-900 dark:text-gray-100 mb-2'>
-                        Analyzed Text ({selectedBook} {selectedChapter}:
-                        {selectedVerse}):
+                        Analyzed Text ({result.analyzedReference.book}{' '}
+                        {result.analyzedReference.chapter}:
+                        {result.analyzedReference.verse}):
                       </h3>
                       {/* ** Increased text darkness/contrast ** */}
                       <blockquote className='italic text-gray-800 dark:text-gray-200 whitespace-pre-wrap'>

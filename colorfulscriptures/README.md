@@ -8,6 +8,8 @@ An AI-powered scripture study tool designed specifically for **LDS (Latter-Day S
 
 Colorful Scriptures helps LDS members enhance their scripture study by analyzing verses from the standard works and suggesting meaningful colors for highlighting based on theological themes. Using Google's Gemini AI, it identifies concepts like prayer, salvation, wisdom, and growth, then recommends appropriate colors for visual scripture marking.
 
+**Current Status:** Stable and production-ready with comprehensive code quality standards and recent bug fixes for improved user experience.
+
 ## Features
 
 ### 🎯 **Intelligent Scripture Analysis**
@@ -39,9 +41,10 @@ Colorful Scriptures helps LDS members enhance their scripture study by analyzing
 ### 💻 **Modern Web Interface**
 
 - Responsive design for desktop and mobile
-- Dark mode support
+- Dark mode support with persistent settings
 - Intuitive dropdowns for scripture selection
-- Real-time analysis results
+- Real-time analysis results with accurate reference tracking
+- Improved analysis display - results maintain correct scripture references
 
 ## Tech Stack
 
@@ -49,6 +52,8 @@ Colorful Scriptures helps LDS members enhance their scripture study by analyzing
 - **Styling**: TailwindCSS v4 with dark mode
 - **Database**: Supabase (PostgreSQL)
 - **AI**: Google Generative AI (Gemini 2.5 Flash)
+- **Code Quality**: ESLint 9, Prettier 3.6, Husky pre-commit hooks
+- **Development**: Turbopack for fast development builds
 - **Deployment**: Vercel-ready
 
 ## Prerequisites
@@ -163,6 +168,20 @@ This will populate your Supabase database with approximately 41,000 verses.
 3. **Analyze** - Click "Color Scriptures!" to get AI analysis
 4. **Review Results** - See color suggestions with theological justifications
 
+### Recent Improvements
+
+**Enhanced User Experience:**
+
+- **Fixed Analysis Display Bug** - Analysis results now correctly maintain their original scripture reference (book, chapter, verse) regardless of subsequent form changes
+- **Improved Reference Accuracy** - Previous analysis results display the correct scripture reference even when you select different verses afterward
+- **Persistent Dark Mode** - Your theme preference is now saved and restored between sessions
+
+**Development Quality:**
+
+- **Code Quality Standards** - Comprehensive ESLint and Prettier configuration ensures consistent, maintainable code
+- **Automated Quality Checks** - Pre-commit hooks automatically format code and catch potential issues
+- **Enhanced Reliability** - All technical debt resolved with improved error handling and user experience
+
 ## Development
 
 ### Available Scripts
@@ -170,8 +189,21 @@ This will populate your Supabase database with approximately 41,000 verses.
 - `npm run dev` - Start development server with Turbopack
 - `npm run build` - Build for production
 - `npm run start` - Start production server
-- `npm run lint` - Run ESLint
+- `npm run lint` - Run ESLint for code quality checks
+- `npm run lint:fix` - Run ESLint and automatically fix issues
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting without changes
 - `npm run import-scriptures` - Import scripture data to database
+
+### Code Quality Standards
+
+This project maintains high code quality standards with:
+
+- **ESLint 9** with TypeScript and Next.js configuration
+- **Prettier 3.6** for consistent code formatting
+- **Husky pre-commit hooks** with lint-staged for automatic code quality checks
+- **Automated formatting** and linting on every commit
+- **Type-safe development** with TypeScript strict mode
 
 ### Project Structure
 
