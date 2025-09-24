@@ -5,6 +5,7 @@ To add a Scripture Analysis Example screenshot to the README:
 ## Taking the Screenshot
 
 1. **Run the application:**
+
    ```bash
    npm run dev
    ```
@@ -14,7 +15,7 @@ To add a Scripture Analysis Example screenshot to the README:
 3. **Create a good example:**
    - Choose a well-known scripture like:
      - **1 Nephi 3:7** (shows obedience/faith themes)
-     - **John 3:16** (shows love/salvation themes)  
+     - **John 3:16** (shows love/salvation themes)
      - **2 Nephi 2:25** (shows joy/purpose themes)
      - **Alma 32:21** (shows faith/hope themes)
 
@@ -36,13 +37,14 @@ To add a Scripture Analysis Example screenshot to the README:
 ## Adding Screenshot to Repository
 
 1. **Save screenshot as:**
+
    ```
    colorfulscriptures/docs/screenshot.png
    ```
 
 2. **Optimal specifications:**
    - Format: PNG (for crisp text)
-   - Width: 1200-1600px 
+   - Width: 1200-1600px
    - Height: 800-1200px
    - File size: Under 1MB if possible
 
@@ -58,6 +60,7 @@ To add a Scripture Analysis Example screenshot to the README:
 If you want to push the repository now and add a real screenshot later, we can create a placeholder that indicates where the screenshot will go.
 
 The README currently references:
+
 ```markdown
 ![Scripture Analysis Example](colorfulscriptures/docs/screenshot.png)
 ```

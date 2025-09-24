@@ -1,0 +1,25 @@
+{
+  "name": "colorfulscriptures",
+  "version": "1.0.0",
+  "description": "An AI-powered scripture study tool designed specifically for **LDS (Latter-Day Saints) scriptures** that provides intelligent color-coding suggestions based on theological themes and concepts.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/voodoogumbo/colorfulscriptures.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/voodoogumbo/colorfulscriptures/issues"
+  },
+  "homepage": "https://github.com/voodoogumbo/colorfulscriptures#readme",
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}

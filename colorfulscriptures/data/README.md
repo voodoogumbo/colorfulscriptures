@@ -10,7 +10,7 @@ Place your scripture data file here as `lds-scriptures.json`. The expected forma
 [
   {
     "volume_title": "Book of Mormon",
-    "book_title": "1 Nephi", 
+    "book_title": "1 Nephi",
     "book_short_title": "1 Ne.",
     "chapter_number": 3,
     "verse_number": 7,
@@ -25,12 +25,15 @@ Place your scripture data file here as `lds-scriptures.json`. The expected forma
 ## Where to Get Scripture Data
 
 ### Option 1: LDS Scripture API
+
 You can download scripture data from various LDS scripture APIs or sources that provide the standard works in JSON format.
 
 ### Option 2: Manual Export
+
 If you have access to LDS scripture data in another format, ensure it matches the structure above.
 
 ### Option 3: Sample Data
+
 Use the provided `sample-scriptures.json` for testing purposes (contains a small subset of verses).
 
 ## After Obtaining Data
@@ -40,4 +43,5 @@ Use the provided `sample-scriptures.json` for testing purposes (contains a small
 3. The script will import all verses into your Supabase database
 
 ## File Size
+
 The complete LDS scripture collection is approximately 2-5 MB in JSON format, containing around 41,000 verses.

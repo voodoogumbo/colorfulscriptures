@@ -11,22 +11,25 @@ Colorful Scriptures helps LDS members enhance their scripture study by analyzing
 ## Features
 
 ### 🎯 **Intelligent Scripture Analysis**
+
 - AI-powered analysis using Google Gemini 2.5 Flash
 - Identifies theological themes and concepts in scripture text
 - Provides detailed justifications for color suggestions
 
 ### 📚 **Complete LDS Scripture Database**
+
 - **Old Testament** (39 books)
-- **New Testament** (27 books) 
+- **New Testament** (27 books)
 - **Book of Mormon** (15 books)
 - **Doctrine and Covenants**
 - **Pearl of Great Price** (5 books)
 
 ### 🎨 **Customizable Color Scheme**
+
 - 12 predefined colors with theological meanings
 - Default scheme includes:
   - **Purple**: Prayer, Praise, Blessing, Worship
-  - **Yellow**: God, Jesus, Holy Spirit  
+  - **Yellow**: God, Jesus, Holy Spirit
   - **Blue**: Wisdom, Teaching, Instruction
   - **Green**: Growth, New Life, Faith
   - **Red**: Evil, Sin, Temptation, Death
@@ -34,6 +37,7 @@ Colorful Scriptures helps LDS members enhance their scripture study by analyzing
   - **Orange**: Laws, History, Genealogies, Numbers
 
 ### 💻 **Modern Web Interface**
+
 - Responsive design for desktop and mobile
 - Dark mode support
 - Intuitive dropdowns for scripture selection
@@ -56,6 +60,7 @@ Colorful Scriptures helps LDS members enhance their scripture study by analyzing
 ## Quick Start
 
 ### 1. Clone and Install
+
 ```bash
 git clone https://github.com/voodoogumbo/colorfulscriptures.git
 cd colorfulscriptures
@@ -63,11 +68,13 @@ npm install
 ```
 
 ### 2. Set up Environment Variables
+
 ```bash
 cp .env.local.example .env.local
 ```
 
 Edit `.env.local` with your credentials:
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 SUPABASE_ANON_KEY=your_supabase_anon_key
@@ -76,18 +83,22 @@ GOOGLE_API_KEY=your_google_ai_api_key
 ```
 
 ### 3. Set up Supabase Database
+
 1. Create a new Supabase project
 2. Run the database schema:
+
 ```sql
 -- See docs/database-schema.sql for complete setup
 ```
 
 ### 4. Import Scripture Data
+
 ```bash
 npm run import-scriptures
 ```
 
 ### 5. Run Development Server
+
 ```bash
 npm run dev
 ```
@@ -99,11 +110,13 @@ Open [http://localhost:3000](http://localhost:3000) to start analyzing scripture
 ### Getting API Keys
 
 #### Google AI API Key
+
 1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
 2. Create a new API key
 3. Copy the key to your `.env.local` file
 
 #### Supabase Setup
+
 1. Create account at [supabase.com](https://supabase.com)
 2. Create new project
 3. Go to Settings → API to find your keys and URL
@@ -200,4 +213,4 @@ For questions or issues, please [open an issue](https://github.com/voodoogumbo/c
 
 ---
 
-*Built with ❤️ for LDS scripture study and spiritual growth*
+_Built with ❤️ for LDS scripture study and spiritual growth_

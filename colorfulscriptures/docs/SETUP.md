@@ -12,10 +12,12 @@ This guide will walk you through setting up Colorful Scriptures on your local ma
 ## Step 1: Clone and Install
 
 ```bash
-git clone https://github.com/yourusername/colorfulscriptures.git
-cd colorfulscriptures
+git clone https://github.com/voodoogumbo/colorfulscriptures.git
+cd colorfulscriptures/colorfulscriptures
 npm install
 ```
+
+**Note**: The `npm install` command will automatically set up git hooks via Husky for code quality checks.
 
 ## Step 2: Get Your API Keys
 
@@ -40,11 +42,13 @@ npm install
 ## Step 3: Configure Environment Variables
 
 1. Copy the example environment file:
+
 ```bash
 cp .env.local.example .env.local
 ```
 
 2. Edit `.env.local` with your actual values:
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_URL=https://your-project-id.supabase.co
@@ -63,14 +67,17 @@ GOOGLE_API_KEY=your_google_ai_key_here
 ## Step 5: Import Scripture Data
 
 ### Option A: Use Sample Data (for testing)
+
 ```bash
 npm run import-scriptures data/sample-scriptures.json
 ```
 
 ### Option B: Get Full Scripture Data
+
 1. Obtain LDS scripture data in the correct JSON format (see `data/README.md`)
 2. Place the file at `data/lds-scriptures.json`
 3. Import the data:
+
 ```bash
 npm run import-scriptures
 ```
@@ -78,6 +85,7 @@ npm run import-scriptures
 ## Step 6: Run the Application
 
 Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -93,18 +101,22 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Troubleshooting
 
 ### "Database connection is not configured" Error
+
 - Check that your Supabase environment variables are correct
 - Ensure your Supabase project is fully provisioned
 
 ### "AI API key not configured" Error
+
 - Verify your Google AI API key is correct in `.env.local`
 - Ensure you've enabled the Gemini API in Google AI Studio
 
 ### "Scripture verse not found" Error
+
 - Make sure you've imported scripture data
 - Verify the verse exists in your database by checking the Supabase table editor
 
 ### Import Script Errors
+
 - Check that your JSON file is valid and in the correct format
 - Ensure you have the `SUPABASE_SERVICE_ROLE_KEY` (not just the anon key)
 - Verify file path is correct
@@ -116,6 +128,41 @@ Once everything is working:
 1. **Customize Colors**: Adjust the color scheme meanings to match your study focus
 2. **Import Full Data**: If using sample data, import the complete scripture collection
 3. **Deploy**: Consider deploying to Vercel for public access
+
+## Development Commands
+
+For ongoing development work:
+
+```bash
+# Start development server with hot reload
+npm run dev
+
+# Check code formatting
+npm run format:check
+
+# Format all code
+npm run format
+
+# Run linting checks
+npm run lint
+
+# Fix auto-fixable linting issues
+npm run lint:fix
+
+# Build for production
+npm run build
+```
+
+## Code Quality
+
+The project uses automated code quality tools:
+
+- **ESLint**: Enforces coding standards and catches potential issues
+- **Prettier**: Maintains consistent code formatting
+- **Husky**: Runs quality checks before each commit
+- **TypeScript**: Provides type safety and better development experience
+
+All quality checks run automatically when you commit code, ensuring consistency across the codebase.
 
 ## Getting Help
 
