@@ -1,8 +1,12 @@
 // app/api/analyze-scripture/route.ts
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { createClient } from '@supabase/supabase-js'; // Import Supabase
 import { NextRequest, NextResponse } from 'next/server';
+
+import {
+  createSupabaseServerClient,
+  resolveSupabaseConfig,
+} from '@/lib/supabaseConfig';
 
 // --- Type Definitions ---
 
@@ -20,6 +24,7 @@ interface GeminiAnalysisResult {
   colorLabel: string;
   colorMeaning: string;
   justification: string;
+  confidence: number;
 }
 
 // Define the overall structure Gemini should return
@@ -31,27 +36,9 @@ interface GeminiResponseJson {
 }
 
 // --- Supabase Client Helpers ---
-function resolveSupabaseConfig() {
-  const url =
-    process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? null;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? null;
-  const anonKey = process.env.SUPABASE_ANON_KEY ?? null;
-  const key = serviceRoleKey ?? anonKey ?? null;
-
-  if (!url || !key) {
-    console.error(
-      'API Route: Missing Supabase configuration. Expect SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY).'
-    );
-  }
-
-  return { url, key };
-}
-
 // --- The API Route Handler ---
 
 export async function POST(req: NextRequest) {
-  // Debug: console.log('API Route: Received request');
-
   // 1. Check Supabase and API Key Config
   const { url: supabaseUrl, key: supabaseKey } = resolveSupabaseConfig();
   if (!supabaseUrl || !supabaseKey) {
@@ -73,12 +60,6 @@ export async function POST(req: NextRequest) {
   let requestBody: AnalyzeRequestBody;
   try {
     requestBody = await req.json();
-    // Debug: Log parsed request body
-    // console.log('API Route: Parsed request body:', {
-    //   book: requestBody.book,
-    //   chapter: requestBody.chapter,
-    //   verse: requestBody.verse,
-    // });
   } catch (error) {
     console.error('API Route: Error parsing request body:', error);
     return NextResponse.json(
@@ -111,8 +92,10 @@ export async function POST(req: NextRequest) {
 
   // **** 4. Query Supabase for the scripture text ****
   try {
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    // Debug: console.log(`Querying Supabase for: ${book} ${chapter}:${verse}`);
+    const supabase = createSupabaseServerClient();
+    if (!supabase) {
+      throw new Error('Database connection is not configured.');
+    }
     const { data: verseData, error: dbError } = await supabase
       .from('scriptures') // Your table name
       .select('scripture_text')
@@ -138,7 +121,6 @@ export async function POST(req: NextRequest) {
     }
 
     fetchedScriptureText = verseData.scripture_text;
-    // Debug: console.log('Supabase: Successfully fetched scripture text.');
   } catch (dbQueryError: unknown) {
     console.error('Error querying database:', dbQueryError);
     // Return a generic server error
@@ -163,9 +145,7 @@ export async function POST(req: NextRequest) {
 
   // Prompt remains the same as the previous version that analyzes provided text
   const prompt = `
-    You are an expert scripture analyzer specializing in identifying theological themes and concepts.
-
-    Your task is to analyze the following provided scripture text according to the user's custom color scheme.
+    You are an expert scripture analyst. Base every decision *only* on the provided scripture text and the meanings supplied in the user's color scheme.
 
     Provided Scripture Text:
     ---
@@ -175,35 +155,39 @@ export async function POST(req: NextRequest) {
     User's Color Scheme:
     ${colorSchemeString}
 
-    Based *only* on the provided scripture text and its themes/concepts, suggest the most relevant color(s) from the user-provided color scheme. For each suggested color, provide a justification explaining *why* that color's meaning applies to the provided scripture text. Also, provide a brief summary of the primary theme or message of the provided text.
+    Instructions:
+    - Identify the single best highlight color for the entire verse that most completely captures the message.
+    - Also identify the runner-up color (second best fit). You must always return two colors (top choice first).
+    - Assign each color a confidence value from 0-100 (integers) that reflects how strongly the verse should be highlighted with that color. The confidences must sum to 100.
+    - If no meaningful runner-up exists, set the second confidence to 0 but still explain why it is far less likely.
+    - Provide a concise justification for each color that references details from the verse.
+    - Provide a short summary of the primary theme (or null when no clear theme exists).
 
     Desired Output Format:
-    Return *only* a single, valid JSON object matching this *exact* structure. Do not include any text outside of the JSON object, including markdown fences like \`\`\`json.
+    Return only one valid JSON object in exactly this structure (no extra text or markdown fences). Order the analysis array from highest to lowest confidence.
 
     {
       "scriptureText": ${JSON.stringify(fetchedScriptureText)},
       "analysis": [
         {
-          "colorLabel": "The label of the *most relevant* color from the user's scheme (e.g., 'Pink')",
-          "colorMeaning": "The meaning associated with that label in the user's scheme (e.g., 'Grace, Salvation, Love, Compassion, Repentance')",
-          "justification": "Your detailed explanation of why this color/meaning fits the provided scripture text."
+          "colorLabel": "Most relevant color label",
+          "colorMeaning": "Meaning from the user scheme",
+          "confidence": 0,
+          "justification": "Explain why the entire verse fits this color."
         }
       ],
-      "primaryThemeReasoning": "A concise summary (1-2 sentences) of the main theme or message identified in the provided scripture text, or null if no single primary theme stands out."
+      "primaryThemeReasoning": "One-to-two sentence primary theme summary, or null."
     }
 
-    Analyze the provided text according to these instructions and the color scheme. Ensure the output is strictly the JSON object described.
+    Analyze the scripture according to these rules and return only the JSON object above.
     `;
   // --------------------------------------
-
-  // Debug: console.log('API Route: Sending prompt to Gemini...');
 
   // 7. Call Gemini API
   try {
     const result = await model.generateContent(prompt); // No generationConfig needed here
     const response = result.response;
     const responseText = response.text();
-    // Debug: console.log('API Route: Received response text from Gemini.');
 
     // 8. Parse Gemini Response (with cleaning)
     let geminiJson: GeminiResponseJson;
@@ -213,7 +197,6 @@ export async function POST(req: NextRequest) {
         .replace(/\s*```$/, '')
         .trim();
       geminiJson = JSON.parse(cleanedText);
-      // Debug: console.log('API Route: Successfully parsed Gemini JSON response.');
     } catch (parseError) {
       console.error(
         'API Route: Failed to parse Gemini response as JSON:',
