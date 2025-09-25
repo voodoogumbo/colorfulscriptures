@@ -181,7 +181,7 @@ export function useScriptureSelection(metadata: ScriptureMetadata) {
       String(index + 1)
     );
     setAvailableVerses(verses);
-    if (verses.length === 1) {
+    if (verses.length === 1 && verses[0]) {
       setSelectedVerse(verses[0]);
     } else if (selectedVerse && !verses.includes(selectedVerse)) {
       setSelectedVerse('');
