@@ -2,7 +2,7 @@
 
 An AI-powered scripture study tool designed specifically for **LDS (Latter-Day Saints) scriptures** that provides intelligent color-coding suggestions based on theological themes and concepts.
 
-![Scripture Analysis Example](colorfulscriptures/docs/screenshot.png)
+![Scripture Analysis Example](docs/screenshot.png)
 
 ## Overview
 
@@ -41,10 +41,13 @@ Colorful Scriptures helps LDS members enhance their scripture study by analyzing
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15.3.1, React 19, TypeScript
-- **Styling**: TailwindCSS v4 with dark mode
+- **Frontend**: Next.js 15.3.1, React 19, TypeScript 5
+- **Styling**: TailwindCSS v4 with PostCSS integration
 - **Database**: Supabase (PostgreSQL)
 - **AI**: Google Generative AI (Gemini 2.5 Flash)
+- **Code Quality**: ESLint 9 with Next.js config, Prettier 3.6
+- **Git Hooks**: Husky 9.1 with pre-commit linting
+- **Development**: Turbopack for fast dev builds
 - **Deployment**: Vercel-ready
 
 ## Prerequisites
@@ -150,6 +153,32 @@ This will populate your Supabase database with approximately 41,000 verses.
 3. **Analyze** - Click "Color Scriptures!" to get AI analysis
 4. **Review Results** - See color suggestions with theological justifications
 
+## Code Quality & Development
+
+### Code Formatting and Linting
+
+This project uses a comprehensive code quality setup:
+
+- **ESLint**: Configured with Next.js, TypeScript, and React rules
+- **Prettier**: Enforces consistent code formatting
+- **Husky**: Runs quality checks before commits
+- **Git Hooks**: Pre-commit hooks run linting and formatting checks
+
+### Development Workflow
+
+1. **Install dependencies**: `npm install`
+2. **Set up git hooks**: `npm run prepare` (runs automatically after install)
+3. **Start development**: `npm run dev`
+4. **Before committing**: Husky automatically runs `npm run lint` and `npm run format:check`
+
+### Code Standards
+
+- All code is automatically formatted with Prettier
+- ESLint enforces TypeScript best practices and React patterns
+- Import statements are automatically organized alphabetically
+- Unused variables and explicit `any` types are flagged as errors
+- Console statements (except error/warn) generate warnings
+
 ## Development
 
 ### Available Scripts
@@ -157,8 +186,12 @@ This will populate your Supabase database with approximately 41,000 verses.
 - `npm run dev` - Start development server with Turbopack
 - `npm run build` - Build for production
 - `npm run start` - Start production server
-- `npm run lint` - Run ESLint
+- `npm run lint` - Run ESLint with Next.js config
+- `npm run lint:fix` - Run ESLint and auto-fix issues
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
 - `npm run import-scriptures` - Import scripture data to database
+- `npm run prepare` - Set up Husky git hooks
 
 ### Project Structure
 
@@ -174,18 +207,44 @@ colorfulscriptures/
 │   │           └── route.ts      # API endpoint for AI analysis
 │   └── lib/
 │       └── scripture_metadata.json # Scripture book/volume mapping
-├── data/                         # Scripture data files
-├── docs/                         # Documentation
+├── data/
+│   ├── README.md                 # Scripture data documentation
+│   └── sample-scriptures.json    # Sample data for testing
+├── docs/
+│   ├── SETUP.md                  # Detailed setup instructions
+│   └── SCREENSHOT_GUIDE.md       # Guide for adding screenshots
+├── .husky/                       # Git hooks configuration
+│   └── pre-commit               # Pre-commit quality checks
+├── .prettierrc.json             # Prettier configuration
+├── .prettierignore              # Prettier ignore patterns
+├── eslint.config.js             # ESLint configuration (flat config)
+├── next.config.ts               # Next.js configuration
+├── postcss.config.mjs           # PostCSS configuration
+├── tsconfig.json                # TypeScript configuration
+├── import-scriptures.js         # Database import utility
 └── package.json
 ```
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Install dependencies**: `npm install` (sets up git hooks automatically)
+4. **Make your changes**: Follow the established code patterns and conventions
+5. **Test your changes**: Ensure the application works correctly
+6. **Commit your changes**: `git commit -m 'Add amazing feature'`
+   - Pre-commit hooks will automatically run linting and formatting checks
+   - Fix any issues before the commit will succeed
+7. **Push to your branch**: `git push origin feature/amazing-feature`
+8. **Open a Pull Request**
+
+### Development Guidelines
+
+- Follow TypeScript best practices (no `any` types, handle undefined cases)
+- Use meaningful variable and function names
+- Write clear commit messages
+- Ensure all linting and formatting checks pass
+- Test changes locally before submitting PRs
 
 ## License
 
