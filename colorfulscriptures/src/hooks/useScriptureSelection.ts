@@ -127,7 +127,7 @@ export function useScriptureSelection(metadata: ScriptureMetadata) {
         setAvailableChapters(chapters);
         setVerseCountsByChapter(versesByChapter);
 
-        if (chapters.length === 1) {
+        if (chapters.length === 1 && chapters[0]) {
           setSelectedChapter(chapters[0]);
           setSelectedVerse('');
         } else {
