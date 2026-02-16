@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 
 const highlightPalette: Record<
   string,
@@ -18,7 +18,7 @@ const highlightPalette: Record<
   },
   yellow: {
     background: 'rgba(234, 179, 8, 0.25)',
-    textColor: '#ffffff',
+    textColor: '#422006',
     borderColor: 'rgba(234, 179, 8, 0.4)',
   },
   green: {
@@ -53,7 +53,7 @@ const highlightPalette: Record<
   },
   white: {
     background: 'rgba(229, 231, 235, 0.8)',
-    textColor: '#ffffff',
+    textColor: '#1e293b',
     borderColor: 'rgba(209, 213, 219, 0.9)',
   },
   gray: {
@@ -106,6 +106,7 @@ interface AnalysisResultsProps {
   typedScriptureText: string;
   isTyping: boolean;
   pendingReference: PageResultState['analyzedReference'] | null;
+  onRetry?: () => void;
 }
 
 export default function AnalysisResults({
@@ -117,12 +118,24 @@ export default function AnalysisResults({
   typedScriptureText,
   isTyping,
   pendingReference,
+  onRetry,
 }: AnalysisResultsProps) {
+  const sectionRef = useRef<HTMLElement>(null);
   const activeReference = result?.analyzedReference ?? pendingReference;
   const shouldShowTypedPreview =
     !result &&
     !!previewScriptureText &&
     (typedScriptureText.length > 0 || isTyping);
+
+  // Scroll into view when loading starts or results arrive
+  useEffect(() => {
+    if (isLoading || result) {
+      sectionRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+  }, [isLoading, result]);
 
   const normalizedAnalysis = useMemo<
     Array<AnalysisResultDisplay & { normalizedConfidence: number }>
@@ -165,9 +178,13 @@ export default function AnalysisResults({
   const primaryColorValue = primaryAnalysis?.colorValue ?? '#6366f1';
 
   return (
-    <section className='rounded-3xl border border-slate-800 bg-slate-950/85 p-6 text-slate-100 shadow-2xl shadow-indigo-950/40 backdrop-blur-sm sm:p-8'>
+    <section
+      ref={sectionRef}
+      className='rounded-3xl border border-slate-800 bg-slate-950/85 p-6 text-slate-100 shadow-2xl shadow-indigo-950/40 backdrop-blur-sm sm:p-8'
+      aria-busy={isLoading}
+    >
       <h2 className='text-xl font-semibold text-slate-100'>Analysis Results</h2>
-      <div className='mt-6 space-y-6'>
+      <div className='mt-6 space-y-6' aria-live='polite' aria-atomic='false'>
         {shouldShowTypedPreview && (
           <div className='space-y-3'>
             <div className='text-sm font-medium uppercase tracking-wide text-indigo-300'>
@@ -183,12 +200,38 @@ export default function AnalysisResults({
               <blockquote className='mt-3 text-lg leading-relaxed text-slate-100 whitespace-pre-wrap'>
                 {typedScriptureText}
                 {isTyping && (
-                  <span className='ml-1 inline-block h-5 w-[0.4rem] animate-pulse bg-slate-100 align-baseline'></span>
+                  <span
+                    className='ml-1 inline-block h-5 w-[0.4rem] animate-pulse bg-slate-100 align-baseline'
+                    aria-hidden='true'
+                  ></span>
                 )}
               </blockquote>
             </div>
             {isLoading && (
-              <p className='text-sm text-indigo-300'>
+              <p
+                className='flex items-center gap-2 text-sm text-indigo-300'
+                role='status'
+              >
+                <svg
+                  className='h-4 w-4 animate-spin'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  aria-hidden='true'
+                >
+                  <circle
+                    className='opacity-25'
+                    cx='12'
+                    cy='12'
+                    r='10'
+                    stroke='currentColor'
+                    strokeWidth='4'
+                  />
+                  <path
+                    className='opacity-75'
+                    fill='currentColor'
+                    d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+                  />
+                </svg>
                 Finding the best color match for your scripture...
               </p>
             )}
@@ -196,15 +239,66 @@ export default function AnalysisResults({
         )}
 
         {isLoading && !shouldShowTypedPreview && (
-          <p className='rounded-2xl border border-dashed border-indigo-500/40 bg-indigo-500/10 px-4 py-4 text-sm font-medium text-indigo-200'>
-            Finding the best color match for your scripture...
-          </p>
+          <div
+            className='flex items-center gap-3 rounded-2xl border border-dashed border-indigo-500/40 bg-indigo-500/10 px-4 py-4'
+            role='status'
+          >
+            <svg
+              className='h-5 w-5 animate-spin text-indigo-300'
+              viewBox='0 0 24 24'
+              fill='none'
+              aria-hidden='true'
+            >
+              <circle
+                className='opacity-25'
+                cx='12'
+                cy='12'
+                r='10'
+                stroke='currentColor'
+                strokeWidth='4'
+              />
+              <path
+                className='opacity-75'
+                fill='currentColor'
+                d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+              />
+            </svg>
+            <p className='text-sm font-medium text-indigo-200'>
+              Finding the best color match for your scripture...
+            </p>
+          </div>
         )}
 
         {!isLoading && error && (
-          <p className='rounded-2xl border border-red-500/50 bg-red-500/10 px-4 py-3 text-sm text-red-200'>
-            Error: {error}. Please check your selection or try again.
-          </p>
+          <div
+            className='rounded-2xl border border-red-500/50 bg-red-500/10 px-4 py-3'
+            role='alert'
+          >
+            <p className='text-sm text-red-200'>
+              Error: {error}. Please check your selection or try again.
+            </p>
+            {onRetry && (
+              <button
+                type='button'
+                onClick={onRetry}
+                className='mt-3 inline-flex items-center gap-2 rounded-lg border border-red-500/40 bg-red-500/15 px-4 py-2 text-sm font-medium text-red-200 transition hover:border-red-400/60 hover:bg-red-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400'
+              >
+                <svg
+                  className='h-4 w-4'
+                  viewBox='0 0 20 20'
+                  fill='currentColor'
+                  aria-hidden='true'
+                >
+                  <path
+                    fillRule='evenodd'
+                    d='M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311V15a.75.75 0 01-1.5 0v-3.5a.75.75 0 01.75-.75H8.55a.75.75 0 010 1.5H7.127l.17.17a4 4 0 006.703-1.79.75.75 0 011.312.724zM4.688 8.576a5.5 5.5 0 019.201-2.466l.312.311V5a.75.75 0 011.5 0v3.5a.75.75 0 01-.75.75H11.45a.75.75 0 010-1.5h1.423l-.17-.17a4 4 0 00-6.703 1.79.75.75 0 01-1.312-.724z'
+                    clipRule='evenodd'
+                  />
+                </svg>
+                Try again
+              </button>
+            )}
+          </div>
         )}
 
         {!isLoading && !error && !result && !hasAnalyzed && (
@@ -215,9 +309,21 @@ export default function AnalysisResults({
         )}
 
         {!isLoading && !error && !result && hasAnalyzed && (
-          <p className='rounded-2xl border border-amber-400/60 bg-amber-500/10 px-4 py-4 text-sm text-amber-200'>
-            Analysis complete, but no specific results were returned this time.
-          </p>
+          <div className='rounded-2xl border border-amber-400/60 bg-amber-500/10 px-4 py-4'>
+            <p className='text-sm text-amber-200'>
+              Analysis complete, but no specific results were returned this
+              time.
+            </p>
+            {onRetry && (
+              <button
+                type='button'
+                onClick={onRetry}
+                className='mt-3 inline-flex items-center gap-2 rounded-lg border border-amber-400/40 bg-amber-500/15 px-4 py-2 text-sm font-medium text-amber-200 transition hover:border-amber-400/60 hover:bg-amber-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400'
+              >
+                Try again
+              </button>
+            )}
+          </div>
         )}
 
         {!isLoading && result && (
@@ -251,10 +357,12 @@ export default function AnalysisResults({
                               color: palette.textColor,
                               borderColor: palette.borderColor,
                             }}
+                            aria-label={`${item.colorLabel}, ${confidence}% confidence`}
                           >
                             <span
                               className='h-2.5 w-2.5 rounded-full border border-white/30'
                               style={{ backgroundColor: item.colorValue }}
+                              aria-hidden='true'
                             ></span>
                             {item.colorLabel}
                             <span className='opacity-80'>{confidence}%</span>

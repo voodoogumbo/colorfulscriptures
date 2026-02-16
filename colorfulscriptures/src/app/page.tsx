@@ -1,7 +1,7 @@
 // app/page.tsx
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useCallback, useRef } from 'react';
 
 const AnalysisResults = React.lazy(
   () => import('../components/AnalysisResults')
@@ -26,6 +26,12 @@ type ScriptureMetadata = {
 // --- Component ---
 export default function ScriptureColoringPage() {
   const metadata: ScriptureMetadata = scriptureMetadata;
+  const lastAnalysisArgsRef = useRef<{
+    volume: string;
+    book: string;
+    chapter: string;
+    verse: string;
+  } | null>(null);
 
   // --- Custom Hooks ---
   const { colorScheme, setColorScheme } = useColorScheme();
@@ -58,43 +64,89 @@ export default function ScriptureColoringPage() {
     handleAnalyzeScripture,
   } = useScriptureAnalysis(colorScheme);
 
-  const { openReferenceDropdown, setOpenReferenceDropdown } =
+  const { openReferenceDropdown, setOpenReferenceDropdown, containerRef } =
     useDropdownState();
 
-  // --- Event Handlers ---
-  const handleVolumeChangeWithClear = (volume: string) => {
-    handleVolumeChange(volume);
-    clearError();
-  };
+  // --- Event Handlers (memoized) ---
+  const handleVolumeChangeWithClear = useCallback(
+    (volume: string) => {
+      handleVolumeChange(volume);
+      clearError();
+    },
+    [handleVolumeChange, clearError]
+  );
 
-  const handleBookChangeWithClear = (book: string) => {
-    handleBookChange(book);
-    clearError();
-  };
+  const handleBookChangeWithClear = useCallback(
+    (book: string) => {
+      handleBookChange(book);
+      clearError();
+    },
+    [handleBookChange, clearError]
+  );
 
-  const handleChapterChangeWithClear = (chapter: string) => {
-    handleChapterChange(chapter);
-    clearError();
-  };
+  const handleChapterChangeWithClear = useCallback(
+    (chapter: string) => {
+      handleChapterChange(chapter);
+      clearError();
+    },
+    [handleChapterChange, clearError]
+  );
 
-  const handleVerseChangeWithClear = (verse: string) => {
-    handleVerseChange(verse);
-    clearError();
-  };
+  const handleVerseChangeWithClear = useCallback(
+    (verse: string) => {
+      handleVerseChange(verse);
+      clearError();
+    },
+    [handleVerseChange, clearError]
+  );
 
-  const handleAnalyze = (event: React.FormEvent<HTMLFormElement>) => {
-    handleAnalyzeScripture(
-      event,
+  const handleAnalyze = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      lastAnalysisArgsRef.current = {
+        volume: selectedVolume,
+        book: selectedBook,
+        chapter: selectedChapter,
+        verse: selectedVerse,
+      };
+      handleAnalyzeScripture(
+        event,
+        selectedVolume,
+        selectedBook,
+        selectedChapter,
+        selectedVerse
+      );
+    },
+    [
+      handleAnalyzeScripture,
       selectedVolume,
       selectedBook,
       selectedChapter,
-      selectedVerse
+      selectedVerse,
+    ]
+  );
+
+  const handleRetry = useCallback(() => {
+    const args = lastAnalysisArgsRef.current;
+    if (!args) return;
+    // Create a synthetic form event
+    const syntheticEvent = {
+      preventDefault: () => {},
+    } as React.FormEvent<HTMLFormElement>;
+    handleAnalyzeScripture(
+      syntheticEvent,
+      args.volume,
+      args.book,
+      args.chapter,
+      args.verse
     );
-  };
+  }, [handleAnalyzeScripture]);
 
   // --- Render ---
   return (
-    <div className='relative min-h-screen overflow-hidden bg-slate-950 text-slate-100'>
+    <main
+      id='main-content'
+      className='relative min-h-screen overflow-hidden bg-slate-950 text-slate-100'
+    >
       <div
         className='pointer-events-none absolute left-1/2 top-[-18rem] h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-indigo-600/30 blur-[160px]'
         aria-hidden='true'
@@ -133,7 +185,7 @@ export default function ScriptureColoringPage() {
       </a>
 
       <div className='relative z-10 mx-auto max-w-6xl px-4 pb-16 pt-16 sm:px-6 lg:px-8 lg:pt-20'>
-        <section className='mx-auto mb-12 max-w-3xl text-center sm:mb-16'>
+        <header className='mx-auto mb-12 max-w-3xl text-center sm:mb-16'>
           <span className='inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-300 shadow-sm ring-1 ring-indigo-500/20'>
             Inspired study companion
           </span>
@@ -144,12 +196,12 @@ export default function ScriptureColoringPage() {
             Build a custom highlighter palette, explore verses, and let the
             analysis reveal the story behind each shade.
           </p>
-        </section>
+        </header>
 
         <div className='grid grid-cols-1 gap-8 lg:grid-cols-5 lg:gap-10'>
           <Suspense
             fallback={
-              <div className='flex h-64 items-center justify-center rounded-lg bg-slate-900/50 animate-pulse'>
+              <div className='flex h-64 items-center justify-center rounded-3xl bg-slate-900/50 animate-pulse lg:col-span-2'>
                 <div className='text-slate-400'>Loading color editor...</div>
               </div>
             }
@@ -163,7 +215,7 @@ export default function ScriptureColoringPage() {
           <div className='space-y-8 lg:col-span-3'>
             <Suspense
               fallback={
-                <div className='flex h-32 items-center justify-center rounded-lg bg-slate-900/50 animate-pulse'>
+                <div className='flex h-32 items-center justify-center rounded-3xl bg-slate-900/50 animate-pulse'>
                   <div className='text-slate-400'>
                     Loading scripture selector...
                   </div>
@@ -179,10 +231,10 @@ export default function ScriptureColoringPage() {
                 availableChapters={availableChapters}
                 availableVerses={availableVerses}
                 isLoading={isLoading}
-                error={error}
                 isReferenceLoading={isReferenceLoading}
                 referenceError={referenceError}
                 openReferenceDropdown={openReferenceDropdown}
+                formRef={containerRef}
                 onVolumeChange={handleVolumeChangeWithClear}
                 onBookChange={handleBookChangeWithClear}
                 onChapterChange={handleChapterChangeWithClear}
@@ -194,7 +246,7 @@ export default function ScriptureColoringPage() {
 
             <Suspense
               fallback={
-                <div className='flex h-48 items-center justify-center rounded-lg bg-slate-900/50 animate-pulse'>
+                <div className='flex h-48 items-center justify-center rounded-3xl bg-slate-900/50 animate-pulse'>
                   <div className='text-slate-400'>
                     Loading analysis results...
                   </div>
@@ -210,11 +262,12 @@ export default function ScriptureColoringPage() {
                 typedScriptureText={typedScriptureText}
                 isTyping={isTyping}
                 pendingReference={pendingReference}
+                onRetry={handleRetry}
               />
             </Suspense>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

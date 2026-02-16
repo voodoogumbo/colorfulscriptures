@@ -137,7 +137,7 @@ export default function ColorSchemeEditor({
                             handleColorSelect(index, colorOption.value)
                           }
                           disabled={isUsed}
-                          className={`relative h-9 w-9 rounded-full border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 overflow-hidden ${
+                          className={`relative h-11 w-11 rounded-full border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 overflow-hidden ${
                             isSelected
                               ? 'border-indigo-400 shadow-inner shadow-indigo-500/30'
                               : isUsed
