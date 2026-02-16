@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 type DropdownType = 'volume' | 'book' | null;
 
@@ -8,9 +8,9 @@ export function useDropdownState() {
 
   const containerRef = useRef<HTMLFormElement>(null);
 
-  const closeDropdown = useCallback(() => {
+  const closeDropdown = () => {
     setOpenReferenceDropdown(null);
-  }, []);
+  };
 
   // Click-outside handler -- only active when a dropdown is open
   useEffect(() => {

@@ -12,11 +12,11 @@ import {
 
 // UPDATED: Define expected request body from frontend
 interface AnalyzeRequestBody {
-  // volume?: string; // Optional: Include if needed for disambiguation in query
-  book: string; // Expect the exact book_title matching the DB
+  book: string;
   chapter: number;
   verse: number;
   colorScheme: Array<{ label: string; meaning: string }>;
+  scriptureText?: string; // Pre-fetched text to skip redundant DB query
 }
 
 // Define the structure expected *within* the Gemini response JSON
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 3. Validate Input
-  const { book, chapter, verse, colorScheme } = requestBody;
+  const { book, chapter, verse, colorScheme, scriptureText } = requestBody;
   if (
     !book ||
     typeof chapter !== 'number' ||
@@ -90,46 +90,46 @@ export async function POST(req: NextRequest) {
 
   let fetchedScriptureText: string | null = null;
 
-  // **** 4. Query Supabase for the scripture text ****
-  try {
-    const supabase = createSupabaseServerClient();
-    if (!supabase) {
-      throw new Error('Database connection is not configured.');
-    }
-    const { data: verseData, error: dbError } = await supabase
-      .from('scriptures') // Your table name
-      .select('scripture_text')
-      .eq('book_title', book) // Assumes 'book' matches 'book_title' exactly
-      .eq('chapter_number', chapter)
-      .eq('verse_number', verse)
-      .limit(1)
-      .single(); // Returns one object { scripture_text: '...' } or null
+  // 4. Use pre-fetched scripture text if provided, otherwise query Supabase
+  if (scriptureText && typeof scriptureText === 'string') {
+    fetchedScriptureText = scriptureText;
+  } else {
+    try {
+      const supabase = createSupabaseServerClient();
+      if (!supabase) {
+        throw new Error('Database connection is not configured.');
+      }
+      const { data: verseData, error: dbError } = await supabase
+        .from('scriptures')
+        .select('scripture_text')
+        .eq('book_title', book)
+        .eq('chapter_number', chapter)
+        .eq('verse_number', verse)
+        .limit(1)
+        .single();
 
-    if (dbError) {
-      // Handle potential errors, e.g., RLS blocking access if policy wasn't set right
-      console.error('Supabase query error:', dbError);
-      // Don't expose detailed DB errors to client
-      throw new Error(`Could not retrieve scripture from database.`);
-    }
+      if (dbError) {
+        console.error('Supabase query error:', dbError);
+        throw new Error(`Could not retrieve scripture from database.`);
+      }
 
-    if (!verseData) {
-      console.warn(`Verse not found in DB: ${book} ${chapter}:${verse}`);
+      if (!verseData) {
+        console.warn(`Verse not found in DB: ${book} ${chapter}:${verse}`);
+        return NextResponse.json(
+          { error: 'Scripture verse not found in database.' },
+          { status: 404 }
+        );
+      }
+
+      fetchedScriptureText = verseData.scripture_text;
+    } catch (dbQueryError: unknown) {
+      console.error('Error querying database:', dbQueryError);
       return NextResponse.json(
-        { error: 'Scripture verse not found in database.' },
-        { status: 404 }
+        { error: `Failed to retrieve scripture text.` },
+        { status: 500 }
       );
     }
-
-    fetchedScriptureText = verseData.scripture_text;
-  } catch (dbQueryError: unknown) {
-    console.error('Error querying database:', dbQueryError);
-    // Return a generic server error
-    return NextResponse.json(
-      { error: `Failed to retrieve scripture text.` },
-      { status: 500 }
-    );
   }
-  // **** END: Supabase Query ****
 
   // 5. Initialize Google AI Client
   const genAI = new GoogleGenerativeAI(apiKey);

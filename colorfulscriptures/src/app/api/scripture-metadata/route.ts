@@ -80,7 +80,11 @@ export async function GET(req: NextRequest) {
     }
 
     const metadata = buildChapterVerseMetadata(data);
-    return NextResponse.json(metadata);
+    return NextResponse.json(metadata, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    });
   } catch (err) {
     console.error('scripture-metadata: Unexpected error', err);
     return NextResponse.json(

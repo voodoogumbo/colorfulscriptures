@@ -1,10 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 
-interface ColorSchemeItem {
-  currentLabel: string;
-  currentValue: string;
-  meaning: string;
-}
+import type { ColorSchemeItem } from '@/types/scripture';
 
 interface AnalysisResult {
   colorLabel: string;
@@ -96,12 +92,7 @@ export function useScriptureAnalysis(colorScheme: ColorSchemeItem[]) {
       meaning: item.meaning,
     }));
 
-    const requestPayload = {
-      book: selectedBook,
-      chapter: chapterNum,
-      verse: verseNum,
-      colorScheme: schemeForApi,
-    };
+    let fetchedText: string | null = null;
 
     try {
       const scriptureResponse = await fetch(
@@ -118,7 +109,8 @@ export function useScriptureAnalysis(colorScheme: ColorSchemeItem[]) {
 
       const scriptureData: { scriptureText?: string } =
         await scriptureResponse.json();
-      setPreviewScriptureText(scriptureData.scriptureText ?? null);
+      fetchedText = scriptureData.scriptureText ?? null;
+      setPreviewScriptureText(fetchedText);
     } catch (previewError) {
       console.error('Error fetching scripture text:', previewError);
       const errorMessage =
@@ -130,6 +122,14 @@ export function useScriptureAnalysis(colorScheme: ColorSchemeItem[]) {
       setPendingReference(null);
       return;
     }
+
+    const requestPayload = {
+      book: selectedBook,
+      chapter: chapterNum,
+      verse: verseNum,
+      colorScheme: schemeForApi,
+      ...(fetchedText ? { scriptureText: fetchedText } : {}),
+    };
 
     try {
       const response = await fetch('/api/analyze-scripture', {

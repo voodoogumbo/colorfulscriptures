@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 
-interface ColorSchemeItem {
-  currentLabel: string;
-  currentValue: string;
-  meaning: string;
-}
+import type { ColorSchemeItem } from '@/types/scripture';
 
 const COLOR_SCHEME_STORAGE_KEY = 'colorfulScriptures.colorScheme';
 

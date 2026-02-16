@@ -1,147 +1,25 @@
-// app/page.tsx
-'use client';
+// app/page.tsx -- Server Component (no 'use client')
 
-import React, { Suspense, useCallback, useRef } from 'react';
+import { Suspense } from 'react';
 
-const AnalysisResults = React.lazy(
-  () => import('../components/AnalysisResults')
-);
-const ColorSchemeEditor = React.lazy(
-  () => import('../components/ColorSchemeEditor')
-);
-const ScriptureSelector = React.lazy(
-  () => import('../components/ScriptureSelector')
-);
-import { useColorScheme } from '../hooks/useColorScheme';
-import { useDropdownState } from '../hooks/useDropdownState';
-import { useScriptureAnalysis } from '../hooks/useScriptureAnalysis';
-import { useScriptureSelection } from '../hooks/useScriptureSelection';
-import scriptureMetadata from '../lib/scripture_metadata.json';
+import ScriptureApp from '../components/ScriptureApp';
+import scriptureData from '../lib/scripture_metadata.json';
 
-// --- Type Definitions ---
-type ScriptureMetadata = {
-  [volumeTitle: string]: string[];
-};
+function AppSkeleton() {
+  return (
+    <div className='grid grid-cols-1 gap-8 lg:grid-cols-5 lg:gap-10'>
+      <div className='flex h-64 items-center justify-center rounded-3xl bg-slate-900/50 animate-pulse lg:col-span-2'>
+        <div className='text-slate-400'>Loading...</div>
+      </div>
+      <div className='space-y-8 lg:col-span-3'>
+        <div className='flex h-32 items-center justify-center rounded-3xl bg-slate-900/50 animate-pulse' />
+        <div className='flex h-48 items-center justify-center rounded-3xl bg-slate-900/50 animate-pulse' />
+      </div>
+    </div>
+  );
+}
 
-// --- Component ---
 export default function ScriptureColoringPage() {
-  const metadata: ScriptureMetadata = scriptureMetadata;
-  const lastAnalysisArgsRef = useRef<{
-    volume: string;
-    book: string;
-    chapter: string;
-    verse: string;
-  } | null>(null);
-
-  // --- Custom Hooks ---
-  const { colorScheme, setColorScheme } = useColorScheme();
-
-  const {
-    selectedVolume,
-    selectedBook,
-    selectedChapter,
-    selectedVerse,
-    availableChapters,
-    availableVerses,
-    isReferenceLoading,
-    referenceError,
-    handleVolumeChange,
-    handleBookChange,
-    handleChapterChange,
-    handleVerseChange,
-  } = useScriptureSelection(metadata);
-
-  const {
-    isLoading,
-    error,
-    result,
-    hasAnalyzed,
-    previewScriptureText,
-    typedScriptureText,
-    isTyping,
-    pendingReference,
-    clearError,
-    handleAnalyzeScripture,
-  } = useScriptureAnalysis(colorScheme);
-
-  const { openReferenceDropdown, setOpenReferenceDropdown, containerRef } =
-    useDropdownState();
-
-  // --- Event Handlers (memoized) ---
-  const handleVolumeChangeWithClear = useCallback(
-    (volume: string) => {
-      handleVolumeChange(volume);
-      clearError();
-    },
-    [handleVolumeChange, clearError]
-  );
-
-  const handleBookChangeWithClear = useCallback(
-    (book: string) => {
-      handleBookChange(book);
-      clearError();
-    },
-    [handleBookChange, clearError]
-  );
-
-  const handleChapterChangeWithClear = useCallback(
-    (chapter: string) => {
-      handleChapterChange(chapter);
-      clearError();
-    },
-    [handleChapterChange, clearError]
-  );
-
-  const handleVerseChangeWithClear = useCallback(
-    (verse: string) => {
-      handleVerseChange(verse);
-      clearError();
-    },
-    [handleVerseChange, clearError]
-  );
-
-  const handleAnalyze = useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
-      lastAnalysisArgsRef.current = {
-        volume: selectedVolume,
-        book: selectedBook,
-        chapter: selectedChapter,
-        verse: selectedVerse,
-      };
-      handleAnalyzeScripture(
-        event,
-        selectedVolume,
-        selectedBook,
-        selectedChapter,
-        selectedVerse
-      );
-    },
-    [
-      handleAnalyzeScripture,
-      selectedVolume,
-      selectedBook,
-      selectedChapter,
-      selectedVerse,
-    ]
-  );
-
-  const handleRetry = useCallback(() => {
-    const args = lastAnalysisArgsRef.current;
-    if (!args) return;
-    // Create a synthetic form event
-    const syntheticEvent = {
-      preventDefault: () => {},
-    } as React.FormEvent<HTMLFormElement>;
-    handleAnalyzeScripture(
-      syntheticEvent,
-      args.volume,
-      args.book,
-      args.chapter,
-      args.verse
-    );
-  }, [handleAnalyzeScripture]);
-
-  // --- Render ---
   return (
     <main
       id='main-content'
@@ -150,11 +28,11 @@ export default function ScriptureColoringPage() {
       <div
         className='pointer-events-none absolute left-1/2 top-[-18rem] h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-indigo-600/30 blur-[160px]'
         aria-hidden='true'
-      ></div>
+      />
       <div
         className='pointer-events-none absolute bottom-[-14rem] right-[-12rem] h-[28rem] w-[28rem] rounded-full bg-fuchsia-500/20 blur-[140px]'
         aria-hidden='true'
-      ></div>
+      />
 
       <a
         href='https://skellyfish.com'
@@ -198,75 +76,12 @@ export default function ScriptureColoringPage() {
           </p>
         </header>
 
-        <div className='grid grid-cols-1 gap-8 lg:grid-cols-5 lg:gap-10'>
-          <Suspense
-            fallback={
-              <div className='flex h-64 items-center justify-center rounded-3xl bg-slate-900/50 animate-pulse lg:col-span-2'>
-                <div className='text-slate-400'>Loading color editor...</div>
-              </div>
-            }
-          >
-            <ColorSchemeEditor
-              colorScheme={colorScheme}
-              onColorSchemeChange={setColorScheme}
-            />
-          </Suspense>
-
-          <div className='space-y-8 lg:col-span-3'>
-            <Suspense
-              fallback={
-                <div className='flex h-32 items-center justify-center rounded-3xl bg-slate-900/50 animate-pulse'>
-                  <div className='text-slate-400'>
-                    Loading scripture selector...
-                  </div>
-                </div>
-              }
-            >
-              <ScriptureSelector
-                metadata={metadata}
-                selectedVolume={selectedVolume}
-                selectedBook={selectedBook}
-                selectedChapter={selectedChapter}
-                selectedVerse={selectedVerse}
-                availableChapters={availableChapters}
-                availableVerses={availableVerses}
-                isLoading={isLoading}
-                isReferenceLoading={isReferenceLoading}
-                referenceError={referenceError}
-                openReferenceDropdown={openReferenceDropdown}
-                formRef={containerRef}
-                onVolumeChange={handleVolumeChangeWithClear}
-                onBookChange={handleBookChangeWithClear}
-                onChapterChange={handleChapterChangeWithClear}
-                onVerseChange={handleVerseChangeWithClear}
-                onOpenReferenceDropdownChange={setOpenReferenceDropdown}
-                onAnalyze={handleAnalyze}
-              />
-            </Suspense>
-
-            <Suspense
-              fallback={
-                <div className='flex h-48 items-center justify-center rounded-3xl bg-slate-900/50 animate-pulse'>
-                  <div className='text-slate-400'>
-                    Loading analysis results...
-                  </div>
-                </div>
-              }
-            >
-              <AnalysisResults
-                isLoading={isLoading}
-                error={error}
-                result={result}
-                hasAnalyzed={hasAnalyzed}
-                previewScriptureText={previewScriptureText}
-                typedScriptureText={typedScriptureText}
-                isTyping={isTyping}
-                pendingReference={pendingReference}
-                onRetry={handleRetry}
-              />
-            </Suspense>
-          </div>
-        </div>
+        <Suspense fallback={<AppSkeleton />}>
+          <ScriptureApp
+            metadata={scriptureData.volumes}
+            versesByChapter={scriptureData.versesByChapter}
+          />
+        </Suspense>
       </div>
     </main>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 const highlightPalette: Record<
   string,
@@ -109,7 +109,7 @@ interface AnalysisResultsProps {
   onRetry?: () => void;
 }
 
-export default function AnalysisResults({
+function AnalysisResults({
   isLoading,
   error,
   result,
@@ -137,9 +137,9 @@ export default function AnalysisResults({
     }
   }, [isLoading, result]);
 
-  const normalizedAnalysis = useMemo<
-    Array<AnalysisResultDisplay & { normalizedConfidence: number }>
-  >(() => {
+  const normalizedAnalysis: Array<
+    AnalysisResultDisplay & { normalizedConfidence: number }
+  > = (() => {
     if (!result?.analysis?.length) return [];
 
     const total = result.analysis.reduce((sum, item) => {
@@ -170,7 +170,7 @@ export default function AnalysisResults({
       }
       return { ...item, normalizedConfidence: normalized };
     });
-  }, [result]);
+  })();
 
   const topRanked = normalizedAnalysis.slice(0, 2);
   const primaryAnalysis = topRanked[0];
@@ -456,3 +456,5 @@ export default function AnalysisResults({
     </section>
   );
 }
+
+export default AnalysisResults;

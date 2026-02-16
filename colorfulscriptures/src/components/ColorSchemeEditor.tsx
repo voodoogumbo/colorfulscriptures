@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 
+import type { ColorSchemeItem } from '@/types/scripture';
+
 const predefinedColors = [
   { label: 'Red', value: 'red' },
   { label: 'Orange', value: 'orange' },
@@ -17,18 +19,12 @@ const predefinedColors = [
   { label: 'Black', value: 'black' },
 ];
 
-interface ColorSchemeItem {
-  currentLabel: string;
-  currentValue: string;
-  meaning: string;
-}
-
 interface ColorSchemeEditorProps {
   colorScheme: ColorSchemeItem[];
   onColorSchemeChange: (colorScheme: ColorSchemeItem[]) => void;
 }
 
-export default function ColorSchemeEditor({
+function ColorSchemeEditor({
   colorScheme,
   onColorSchemeChange,
 }: ColorSchemeEditorProps) {
@@ -169,3 +165,5 @@ export default function ColorSchemeEditor({
     </section>
   );
 }
+
+export default ColorSchemeEditor;

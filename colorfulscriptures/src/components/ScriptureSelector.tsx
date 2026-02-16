@@ -5,10 +5,25 @@ import React, {
   ChangeEvent,
   useRef,
   useEffect,
-  useCallback,
   KeyboardEvent,
   RefObject,
 } from 'react';
+
+// --- Shared class strings ---
+const dropdownTriggerClass =
+  'flex w-full items-center justify-between rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-3 text-sm font-medium text-slate-100 shadow-sm transition hover:border-indigo-400 hover:text-indigo-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-50';
+
+const dropdownPanelClass =
+  'absolute left-0 z-50 mt-3 w-full origin-top-left rounded-2xl border border-slate-700 bg-slate-900 p-2 text-slate-100 shadow-2xl ring-1 ring-indigo-500/30';
+
+const dropdownOptionClass =
+  'flex w-full items-center rounded-xl px-3 py-2.5 text-sm text-slate-200 transition hover:bg-indigo-500/30 hover:text-white focus:bg-indigo-500/30 focus:text-white focus:outline-none';
+
+const selectClass =
+  'w-full appearance-none rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-3 pr-10 text-sm text-slate-100 shadow-sm transition focus:border-indigo-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-50';
+
+const fieldLabelClass =
+  'flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400';
 
 // --- Shared chevron icon ---
 function ChevronDown({ className }: { className?: string }) {
@@ -28,6 +43,9 @@ function ChevronDown({ className }: { className?: string }) {
     </svg>
   );
 }
+
+const selectChevronClass =
+  'pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400';
 
 // --- Spinner icon ---
 function Spinner() {
@@ -76,7 +94,7 @@ interface ScriptureSelectorProps {
   onAnalyze: (event: FormEvent<HTMLFormElement>) => void;
 }
 
-export default function ScriptureSelector({
+function ScriptureSelector({
   metadata,
   selectedVolume,
   selectedBook,
@@ -102,23 +120,17 @@ export default function ScriptureSelector({
   const volumeList = Object.keys(metadata);
   const bookList = selectedVolume ? metadata[selectedVolume] || [] : [];
 
-  const handleVolumeSelect = useCallback(
-    (volume: string) => {
-      onVolumeChange(volume);
-      onOpenReferenceDropdownChange(null);
-      document.getElementById('volumeSelectButton')?.focus();
-    },
-    [onVolumeChange, onOpenReferenceDropdownChange]
-  );
+  const handleVolumeSelect = (volume: string) => {
+    onVolumeChange(volume);
+    onOpenReferenceDropdownChange(null);
+    document.getElementById('volumeSelectButton')?.focus();
+  };
 
-  const handleBookSelect = useCallback(
-    (book: string) => {
-      onBookChange(book);
-      onOpenReferenceDropdownChange(null);
-      document.getElementById('bookSelectButton')?.focus();
-    },
-    [onBookChange, onOpenReferenceDropdownChange]
-  );
+  const handleBookSelect = (book: string) => {
+    onBookChange(book);
+    onOpenReferenceDropdownChange(null);
+    document.getElementById('bookSelectButton')?.focus();
+  };
 
   // Focus the selected (or first) item when dropdown opens
   useEffect(() => {
@@ -141,69 +153,64 @@ export default function ScriptureSelector({
   }, [openReferenceDropdown]);
 
   // Keyboard navigation handler for listbox dropdowns
-  const handleListboxKeyDown = useCallback(
-    (
-      event: KeyboardEvent<HTMLDivElement>,
-      items: string[],
-      onSelect: (item: string) => void
-    ) => {
-      const { key } = event;
-      const listEl = event.currentTarget;
-      const buttons = Array.from(
-        listEl.querySelectorAll('button[role="option"]')
-      ) as HTMLButtonElement[];
-      const currentIndex = buttons.findIndex(
-        btn => btn === document.activeElement
-      );
+  const handleListboxKeyDown = (
+    event: KeyboardEvent<HTMLDivElement>,
+    items: string[],
+    onSelect: (item: string) => void
+  ) => {
+    const { key } = event;
+    const listEl = event.currentTarget;
+    const buttons = Array.from(
+      listEl.querySelectorAll('button[role="option"]')
+    ) as HTMLButtonElement[];
+    const currentIndex = buttons.findIndex(
+      btn => btn === document.activeElement
+    );
 
-      let nextIndex = currentIndex;
+    let nextIndex = currentIndex;
 
-      switch (key) {
-        case 'ArrowDown':
-          event.preventDefault();
-          nextIndex = currentIndex < buttons.length - 1 ? currentIndex + 1 : 0;
-          break;
-        case 'ArrowUp':
-          event.preventDefault();
-          nextIndex = currentIndex > 0 ? currentIndex - 1 : buttons.length - 1;
-          break;
-        case 'Home':
-          event.preventDefault();
-          nextIndex = 0;
-          break;
-        case 'End':
-          event.preventDefault();
-          nextIndex = buttons.length - 1;
-          break;
-        case 'Enter':
-        case ' ':
-          event.preventDefault();
-          if (currentIndex >= 0 && items[currentIndex]) {
-            onSelect(items[currentIndex]);
+    switch (key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        nextIndex = currentIndex < buttons.length - 1 ? currentIndex + 1 : 0;
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        nextIndex = currentIndex > 0 ? currentIndex - 1 : buttons.length - 1;
+        break;
+      case 'Home':
+        event.preventDefault();
+        nextIndex = 0;
+        break;
+      case 'End':
+        event.preventDefault();
+        nextIndex = buttons.length - 1;
+        break;
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        if (currentIndex >= 0 && items[currentIndex]) {
+          onSelect(items[currentIndex]);
+        }
+        return;
+      case 'Escape':
+        return;
+      default:
+        if (key.length === 1 && key.match(/\S/)) {
+          const lowerKey = key.toLowerCase();
+          const matchIndex = items.findIndex(item =>
+            item.toLowerCase().startsWith(lowerKey)
+          );
+          if (matchIndex >= 0) {
+            event.preventDefault();
+            nextIndex = matchIndex;
           }
-          return;
-        case 'Escape':
-          // Handled globally by useDropdownState
-          return;
-        default:
-          // Type-ahead: jump to first item starting with typed character
-          if (key.length === 1 && key.match(/\S/)) {
-            const lowerKey = key.toLowerCase();
-            const matchIndex = items.findIndex(item =>
-              item.toLowerCase().startsWith(lowerKey)
-            );
-            if (matchIndex >= 0) {
-              event.preventDefault();
-              nextIndex = matchIndex;
-            }
-          }
-          return;
-      }
+        }
+        return;
+    }
 
-      buttons[nextIndex]?.focus();
-    },
-    []
-  );
+    buttons[nextIndex]?.focus();
+  };
 
   return (
     <section className='rounded-3xl border border-slate-800 bg-slate-950/85 p-6 text-slate-100 shadow-2xl shadow-indigo-950/40 backdrop-blur-sm sm:p-8'>
@@ -221,10 +228,7 @@ export default function ScriptureSelector({
         <div className='grid gap-5 sm:grid-cols-2'>
           {/* Volume dropdown */}
           <div className='sm:col-span-1 space-y-2'>
-            <div
-              className='flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400'
-              id='volumeLabel'
-            >
+            <div className={fieldLabelClass} id='volumeLabel'>
               <span>Volume</span>
               {selectedVolume && (
                 <span className='text-slate-400'>Selected</span>
@@ -240,7 +244,7 @@ export default function ScriptureSelector({
                   )
                 }
                 disabled={isLoading}
-                className='flex w-full items-center justify-between rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-3 text-sm font-medium text-slate-100 shadow-sm transition hover:border-indigo-400 hover:text-indigo-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-50'
+                className={dropdownTriggerClass}
                 aria-haspopup='listbox'
                 aria-expanded={openReferenceDropdown === 'volume'}
                 aria-labelledby='volumeLabel'
@@ -258,7 +262,7 @@ export default function ScriptureSelector({
               {openReferenceDropdown === 'volume' && (
                 <div
                   id='volumeListbox'
-                  className='absolute left-0 z-50 mt-3 w-full origin-top-left rounded-2xl border border-slate-700 bg-slate-900 p-2 text-slate-100 shadow-2xl ring-1 ring-indigo-500/30'
+                  className={dropdownPanelClass}
                   role='listbox'
                   aria-labelledby='volumeLabel'
                   onMouseDown={e => e.preventDefault()}
@@ -273,7 +277,7 @@ export default function ScriptureSelector({
                         key={volTitle}
                         type='button'
                         onClick={() => handleVolumeSelect(volTitle)}
-                        className='flex w-full items-center rounded-xl px-3 py-2.5 text-sm text-slate-200 transition hover:bg-indigo-500/30 hover:text-white focus:bg-indigo-500/30 focus:text-white focus:outline-none'
+                        className={dropdownOptionClass}
                         role='option'
                         aria-selected={selectedVolume === volTitle}
                         tabIndex={-1}
@@ -289,10 +293,7 @@ export default function ScriptureSelector({
 
           {/* Book dropdown */}
           <div className='sm:col-span-1 space-y-2'>
-            <div
-              className='flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400'
-              id='bookLabel'
-            >
+            <div className={fieldLabelClass} id='bookLabel'>
               <span>Book</span>
               {selectedBook && <span className='text-slate-400'>Selected</span>}
             </div>
@@ -306,7 +307,7 @@ export default function ScriptureSelector({
                   )
                 }
                 disabled={isLoading || !selectedVolume || bookList.length === 0}
-                className='flex w-full items-center justify-between rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-3 text-sm font-medium text-slate-100 shadow-sm transition hover:border-indigo-400 hover:text-indigo-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-50'
+                className={dropdownTriggerClass}
                 aria-haspopup='listbox'
                 aria-expanded={openReferenceDropdown === 'book'}
                 aria-labelledby='bookLabel'
@@ -322,7 +323,7 @@ export default function ScriptureSelector({
               {openReferenceDropdown === 'book' && (
                 <div
                   id='bookListbox'
-                  className='absolute left-0 z-50 mt-3 w-full origin-top-left rounded-2xl border border-slate-700 bg-slate-900 p-2 text-slate-100 shadow-2xl ring-1 ring-indigo-500/30'
+                  className={dropdownPanelClass}
                   role='listbox'
                   aria-labelledby='bookLabel'
                   onMouseDown={e => e.preventDefault()}
@@ -337,7 +338,7 @@ export default function ScriptureSelector({
                         key={bookTitle}
                         type='button'
                         onClick={() => handleBookSelect(bookTitle)}
-                        className='flex w-full items-center rounded-xl px-3 py-2.5 text-sm text-slate-200 transition hover:bg-indigo-500/30 hover:text-white focus:bg-indigo-500/30 focus:text-white focus:outline-none'
+                        className={dropdownOptionClass}
                         role='option'
                         aria-selected={selectedBook === bookTitle}
                         tabIndex={-1}
@@ -355,10 +356,7 @@ export default function ScriptureSelector({
         <div className='grid gap-5 sm:grid-cols-2'>
           {/* Chapter select */}
           <div className='space-y-2'>
-            <label
-              htmlFor='chapterSelect'
-              className='flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400'
-            >
+            <label htmlFor='chapterSelect' className={fieldLabelClass}>
               <span>Chapter</span>
               {selectedChapter && (
                 <span className='text-slate-400'>Selected</span>
@@ -372,7 +370,7 @@ export default function ScriptureSelector({
                 onChange={(event: ChangeEvent<HTMLSelectElement>) =>
                   onChapterChange(event.target.value)
                 }
-                className='w-full appearance-none rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-3 pr-10 text-sm text-slate-100 shadow-sm transition focus:border-indigo-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-50'
+                className={selectClass}
                 disabled={
                   isLoading ||
                   isReferenceLoading ||
@@ -392,16 +390,13 @@ export default function ScriptureSelector({
                   </option>
                 ))}
               </select>
-              <ChevronDown className='pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400' />
+              <ChevronDown className={selectChevronClass} />
             </div>
           </div>
 
           {/* Verse select */}
           <div className='space-y-2'>
-            <label
-              htmlFor='verseSelect'
-              className='flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400'
-            >
+            <label htmlFor='verseSelect' className={fieldLabelClass}>
               <span>Verse</span>
               {selectedVerse && (
                 <span className='text-slate-400'>Selected</span>
@@ -415,7 +410,7 @@ export default function ScriptureSelector({
                 onChange={(event: ChangeEvent<HTMLSelectElement>) =>
                   onVerseChange(event.target.value)
                 }
-                className='w-full appearance-none rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-3 pr-10 text-sm text-slate-100 shadow-sm transition focus:border-indigo-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-50'
+                className={selectClass}
                 disabled={
                   isLoading ||
                   isReferenceLoading ||
@@ -434,7 +429,7 @@ export default function ScriptureSelector({
                   </option>
                 ))}
               </select>
-              <ChevronDown className='pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400' />
+              <ChevronDown className={selectChevronClass} />
             </div>
           </div>
         </div>
@@ -485,3 +480,5 @@ export default function ScriptureSelector({
     </section>
   );
 }
+
+export default ScriptureSelector;

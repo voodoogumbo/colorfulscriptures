@@ -1,44 +1,52 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
-type ScriptureMetadata = {
+type VolumeMetadata = {
   [volumeTitle: string]: string[];
 };
 
-export function useScriptureSelection(metadata: ScriptureMetadata) {
+type VersesByChapterData = {
+  [bookTitle: string]: Record<string, number>;
+};
+
+export function useScriptureSelection(
+  metadata: VolumeMetadata,
+  allVersesByChapter: VersesByChapterData
+) {
   const [selectedVolume, setSelectedVolume] = useState<string>('');
   const [selectedBook, setSelectedBook] = useState<string>('');
   const [selectedChapter, setSelectedChapter] = useState<string>('');
   const [selectedVerse, setSelectedVerse] = useState<string>('');
   const [bookList, setBookList] = useState<string[]>([]);
-  const [availableChapters, setAvailableChapters] = useState<string[]>([]);
-  const [verseCountsByChapter, setVerseCountsByChapter] = useState<
-    Record<string, number>
-  >({});
-  const [availableVerses, setAvailableVerses] = useState<string[]>([]);
-  const [isReferenceLoading, setIsReferenceLoading] = useState<boolean>(false);
-  const [referenceError, setReferenceError] = useState<string | null>(null);
+
+  // Derive chapters and verse counts from pre-computed static data
+  const verseCountsByChapter = useMemo(() => {
+    if (!selectedBook || !allVersesByChapter[selectedBook]) return {};
+    return allVersesByChapter[selectedBook];
+  }, [selectedBook, allVersesByChapter]);
+
+  const availableChapters = useMemo(() => {
+    return Object.keys(verseCountsByChapter).sort(
+      (a, b) => Number(a) - Number(b)
+    );
+  }, [verseCountsByChapter]);
+
+  const availableVerses = useMemo(() => {
+    if (!selectedChapter) return [];
+    const verseCount = verseCountsByChapter[selectedChapter];
+    if (!verseCount) return [];
+    return Array.from({ length: verseCount }, (_, i) => String(i + 1));
+  }, [selectedChapter, verseCountsByChapter]);
 
   // Update book list when volume changes
   useEffect(() => {
     if (selectedVolume && metadata[selectedVolume]) {
       setBookList(metadata[selectedVolume]);
-      setSelectedBook('');
-      setSelectedChapter('');
-      setSelectedVerse('');
-      setAvailableChapters([]);
-      setAvailableVerses([]);
-      setVerseCountsByChapter({});
-      setReferenceError(null);
     } else {
       setBookList([]);
-      setSelectedBook('');
-      setSelectedChapter('');
-      setSelectedVerse('');
-      setAvailableChapters([]);
-      setAvailableVerses([]);
-      setVerseCountsByChapter({});
-      setReferenceError(null);
     }
+    setSelectedBook('');
+    setSelectedChapter('');
+    setSelectedVerse('');
   }, [selectedVolume, metadata]);
 
   const handleVolumeChange = (volume: string) => {
@@ -49,10 +57,6 @@ export function useScriptureSelection(metadata: ScriptureMetadata) {
     setSelectedBook(book);
     setSelectedChapter('');
     setSelectedVerse('');
-    setAvailableChapters([]);
-    setAvailableVerses([]);
-    setVerseCountsByChapter({});
-    setReferenceError(null);
   };
 
   const handleChapterChange = (chapter: string) => {
@@ -60,21 +64,20 @@ export function useScriptureSelection(metadata: ScriptureMetadata) {
     if (chapter) {
       const verseCount = verseCountsByChapter[chapter];
       if (verseCount) {
-        const verses = Array.from({ length: verseCount }, (_, index) =>
-          String(index + 1)
+        const verses = Array.from({ length: verseCount }, (_, i) =>
+          String(i + 1)
         );
-        setAvailableVerses(verses);
         if (verses.length === 1 && verses[0]) {
           setSelectedVerse(verses[0]);
-        } else if (!verses.includes(selectedVerse)) {
-          setSelectedVerse('');
+        } else {
+          setSelectedVerse(prev =>
+            prev && !verses.includes(prev) ? '' : prev
+          );
         }
       } else {
-        setAvailableVerses([]);
         setSelectedVerse('');
       }
     } else {
-      setAvailableVerses([]);
       setSelectedVerse('');
     }
   };
@@ -82,111 +85,6 @@ export function useScriptureSelection(metadata: ScriptureMetadata) {
   const handleVerseChange = (verse: string) => {
     setSelectedVerse(verse);
   };
-
-  useEffect(() => {
-    if (!selectedBook) {
-      setAvailableChapters([]);
-      setVerseCountsByChapter({});
-      setIsReferenceLoading(false);
-      return;
-    }
-
-    let isCancelled = false;
-
-    async function fetchBookMetadata() {
-      setIsReferenceLoading(true);
-      setReferenceError(null);
-
-      try {
-        const response = await fetch(
-          `/api/scripture-metadata?book=${encodeURIComponent(selectedBook)}`
-        );
-
-        if (!response.ok) {
-          const data = await response.json().catch(() => null);
-          throw new Error(data?.error || 'Failed to load reference metadata.');
-        }
-
-        const data = await response.json();
-        const chapters: string[] = Array.isArray(data?.chapters)
-          ? data.chapters.map((chapterNumber: number) => String(chapterNumber))
-          : [];
-        const versesByChapter: Record<string, number> = data?.versesByChapter
-          ? Object.fromEntries(
-              Object.entries<number>(data.versesByChapter).map(
-                ([chapterNumber, verseCount]) => [
-                  String(chapterNumber),
-                  verseCount,
-                ]
-              )
-            )
-          : {};
-
-        if (isCancelled) return;
-
-        setAvailableChapters(chapters);
-        setVerseCountsByChapter(versesByChapter);
-
-        if (chapters.length === 1 && chapters[0]) {
-          setSelectedChapter(chapters[0]);
-          setSelectedVerse('');
-        } else {
-          setSelectedChapter('');
-          setSelectedVerse('');
-        }
-      } catch (error) {
-        if (isCancelled) return;
-        console.error('Failed to load scripture metadata', error);
-        setReferenceError(
-          error instanceof Error
-            ? error.message
-            : 'Failed to load reference metadata.'
-        );
-        setAvailableChapters([]);
-        setVerseCountsByChapter({});
-        setAvailableVerses([]);
-        setSelectedChapter('');
-        setSelectedVerse('');
-      } finally {
-        if (!isCancelled) {
-          setIsReferenceLoading(false);
-        }
-      }
-    }
-
-    fetchBookMetadata();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [selectedBook]);
-
-  const clearError = () => {
-    // This will be handled by the analysis hook
-  };
-
-  useEffect(() => {
-    if (!selectedChapter) {
-      setAvailableVerses([]);
-      return;
-    }
-
-    const verseCount = verseCountsByChapter[selectedChapter];
-    if (!verseCount) {
-      setAvailableVerses([]);
-      return;
-    }
-
-    const verses = Array.from({ length: verseCount }, (_, index) =>
-      String(index + 1)
-    );
-    setAvailableVerses(verses);
-    if (verses.length === 1 && verses[0]) {
-      setSelectedVerse(verses[0]);
-    } else if (selectedVerse && !verses.includes(selectedVerse)) {
-      setSelectedVerse('');
-    }
-  }, [selectedChapter, verseCountsByChapter, selectedVerse]);
 
   return {
     selectedVolume,
@@ -196,12 +94,12 @@ export function useScriptureSelection(metadata: ScriptureMetadata) {
     bookList,
     availableChapters,
     availableVerses,
-    isReferenceLoading,
-    referenceError,
+    isReferenceLoading: false, // No longer needed - data is static
+    referenceError: null, // No longer needed - no network call
     handleVolumeChange,
     handleBookChange,
     handleChapterChange,
     handleVerseChange,
-    clearError,
+    clearError: () => {},
   };
 }
