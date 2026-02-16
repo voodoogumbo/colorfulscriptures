@@ -119,7 +119,7 @@ export default function ColorSchemeEditor({
 
               {isExpanded && (
                 <div className='rounded-xl border border-slate-800 bg-slate-900/70 p-4'>
-                  <div className='grid grid-cols-6 gap-3 sm:grid-cols-8'>
+                  <div className='grid grid-cols-6 gap-3'>
                     {predefinedColors.map(colorOption => {
                       const isSelected =
                         colorOption.value === item.currentValue;
@@ -137,7 +137,7 @@ export default function ColorSchemeEditor({
                             handleColorSelect(index, colorOption.value)
                           }
                           disabled={isUsed}
-                          className={`relative h-11 w-11 rounded-full border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 overflow-hidden ${
+                          className={`relative h-9 w-9 rounded-full border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 overflow-hidden ${
                             isSelected
                               ? 'border-indigo-400 shadow-inner shadow-indigo-500/30'
                               : isUsed
